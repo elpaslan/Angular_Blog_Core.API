@@ -19,15 +19,15 @@ namespace AngularBlog.Core.Api.Controllers
             System.Threading.Thread.Sleep(5000);
             try {
                 MailMessage mailMessage = new MailMessage();
-                SmtpClient smtpClient = new SmtpClient("mail.plissedesign.com");
-                mailMessage.From = new MailAddress("info@plissedesign.com");
-                mailMessage.To.Add("alpaslandulkadir@gmail.com");
+                SmtpClient smtpClient = new SmtpClient("mail.alanadi.com");
+                mailMessage.From = new MailAddress("info@alanadi.com");
+                mailMessage.To.Add("alpaslan@gmail.com");
 
                 mailMessage.Subject = contact.Subject;
                 mailMessage.Body = contact.Message;
                 mailMessage.IsBodyHtml = true;
                 smtpClient.Port = 587;
-                smtpClient.Credentials = new System.Net.NetworkCredential("alpaslandulkadir@alanadi.com", "13579Info!");
+                smtpClient.Credentials = new System.Net.NetworkCredential("info@alanadi.com", "*****!");
 
                 smtpClient.Send(mailMessage);
                 return Ok();
