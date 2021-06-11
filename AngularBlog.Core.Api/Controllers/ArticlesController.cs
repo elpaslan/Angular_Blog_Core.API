@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using AngularBlog.Core.Api.Models;
 using AngularBlog.Core.Api.Responses;
 using System.Globalization;
+using System.IO;
 
 namespace AngularBlog.Core.Api.Controllers
 {
@@ -22,13 +23,7 @@ namespace AngularBlog.Core.Api.Controllers
             _context = context;
         }
 
-        // GET: api/Articles
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Article>>> GetArticles()
-        {
-            return await _context.Articles.ToListAsync();
-        }
-                
+       
 
         // GET: api/Articles/1/5
         [HttpGet]
@@ -206,10 +201,12 @@ namespace AngularBlog.Core.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutArticle(int id, Article article)
         {
-            if (id != article.Id)
-            {
-                return BadRequest();
-            }
+            Article firstArticle = _context.Articles.Find(id);
+            firstArticle.Title = article.Title;
+            firstArticle.ContentSummary = article.ContentSummary;
+            firstArticle.ContentMain = article.ContentMain;
+            firstArticle.CategoryId = article.Category.Id;
+            firstArticle.Picture = article.Picture;
 
             _context.Entry(article).State = EntityState.Modified;
 
@@ -235,12 +232,21 @@ namespace AngularBlog.Core.Api.Controllers
         // POST: api/Articles
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Article>> PostArticle(Article article)
+        public async Task<ActionResult> PostArticle(Article article)
         {
+            if (article.Category != null)
+            {
+                article.CategoryId = article.Category.Id;                
+            }
+
+            article.Category = null;
+            article.ViewCount = 0;
+            article.PublishDate = DateTime.Now;
+
             _context.Articles.Add(article);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetArticle", new { id = article.Id }, article);
+            return Ok();
         }
 
         // DELETE: api/Articles/5
@@ -283,7 +289,7 @@ namespace AngularBlog.Core.Api.Controllers
         {
             return _context.Articles.Any(e => e.Id == id);
         }
-
+        
         [HttpGet()]
         [Route("ArticleViewCountUp/{id}")]
         public IActionResult ArticleViewCountUp(int id)
@@ -293,5 +299,27 @@ namespace AngularBlog.Core.Api.Controllers
             _context.SaveChanges();
             return Ok();
         }
+
+        [HttpPost]
+        [Route("SaveArticlePicture")]
+        public async Task<IActionResult> SaveArticlePicture(IFormFile picture)
+        {
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(picture.FileName);
+
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/articlePicture", fileName);
+
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await picture.CopyToAsync(stream);
+            };
+
+            var result = new 
+            { 
+                path = "https://" + Request.Host + "/articlePicture/" + fileName 
+            };
+
+            return Ok(result);
+        }
+
     }
 }
