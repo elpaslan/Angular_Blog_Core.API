@@ -197,18 +197,16 @@ namespace AngularBlog.Core.Api.Controllers
             };
             return Ok(result);
         }
-
         [HttpPut("{id}")]
         public async Task<IActionResult> PutArticle(int id, Article article)
         {
             Article firstArticle = _context.Articles.Find(id);
+
             firstArticle.Title = article.Title;
             firstArticle.ContentSummary = article.ContentSummary;
             firstArticle.ContentMain = article.ContentMain;
             firstArticle.CategoryId = article.Category.Id;
             firstArticle.Picture = article.Picture;
-
-            _context.Entry(article).State = EntityState.Modified;
 
             try
             {
@@ -262,7 +260,7 @@ namespace AngularBlog.Core.Api.Controllers
             _context.Articles.Remove(article);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok();
         }
 
         public Tuple<IEnumerable<ArticleResponse>, int> ArticlesPagination(IQueryable<Article> query, int page, int pageSize)
